@@ -20,13 +20,18 @@ function Health() {
 
   async function loadData() {
     try {
+      setError(null);
+      console.log('Fetching health data...');
       const [healthData, servicesData] = await Promise.all([
         api.health.status(),
         api.services.list(),
       ]);
-      setHealth(healthData);
-      setServices(servicesData);
+      console.log('Health data received:', healthData);
+      console.log('Services data received:', servicesData);
+      setHealth(healthData || []);
+      setServices(servicesData || []);
     } catch (err) {
+      console.error('Error loading health data:', err);
       setError(err.message);
     } finally {
       setLoading(false);

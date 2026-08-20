@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import './Layout.css';
 
-function Layout() {
+function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -13,7 +12,7 @@ function Layout() {
       <div className="layout-body">
         <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <main className="main-content" role="main">
-          <Outlet />
+          {children}
         </main>
       </div>
       <button

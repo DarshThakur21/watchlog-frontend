@@ -31,8 +31,10 @@ function Logs() {
 
   async function loadServices() {
     try {
+      console.log('Fetching services for logs...');
       const data = await api.services.list();
-      setServices(data);
+      console.log('Services data received:', data);
+      setServices(data || []);
     } catch (err) {
       console.error('Failed to load services:', err);
     }
@@ -51,10 +53,13 @@ function Logs() {
         ...(filters.to && { to: filters.to }),
         ...(filters.keyword && { keyword: filters.keyword }),
       };
+      console.log('Fetching logs with params:', params);
       const response = await api.logs.query(params);
+      console.log('Logs response:', response);
       setLogs(response.logs || []);
       setTotalHits(response.totalHits || 0);
     } catch (err) {
+      console.error('Error loading logs:', err);
       setError(err.message);
       setLogs([]);
       setTotalHits(0);

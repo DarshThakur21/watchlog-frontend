@@ -31,9 +31,11 @@ function Metrics() {
 
   async function loadServices() {
     try {
+      console.log('Fetching services for metrics...');
       const data = await api.services.list();
-      setServices(data);
-      if (data.length > 0) {
+      console.log('Services data received:', data);
+      setServices(data || []);
+      if (data && data.length > 0) {
         setSelectedService(data[0].id);
       }
     } catch (err) {
@@ -50,9 +52,12 @@ function Metrics() {
         ...(from && { from: new Date(from).toISOString() }),
         ...(to && { to: new Date(to).toISOString() }),
       };
+      console.log('Fetching metrics with params:', { serviceId: selectedService, metricName: metricName || customMetric, ...params });
       const response = await api.metrics.query(selectedService, metricName || customMetric, params);
+      console.log('Metrics response:', response);
       setData(response.points || []);
     } catch (err) {
+      console.error('Error loading metrics:', err);
       setError(err.message);
       setData([]);
     } finally {

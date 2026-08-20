@@ -12,6 +12,7 @@ function Dashboard() {
     totalServices: 0,
   });
   const [healthStatus, setHealthStatus] = useState([]);
+  const [recentLogs, setRecentLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -22,21 +23,27 @@ function Dashboard() {
   async function loadDashboardData() {
     try {
       setLoading(true);
-      const [projects, services, health] = await Promise.all([
+      setError(null);
+      console.log('Fetching dashboard data...');
+      const [projects, services, health, logsResponse] = await Promise.all([
         api.projects.list(),
         api.services.list(),
         api.health.status(),
+        api.logs.query({ size: 5 }).catch(() => ({ logs: [], totalHits: 0 })),
       ]);
+      console.log('Dashboard data received:', { projects, services, health, logsResponse });
 
       setStats({
-        projects: projects.length,
-        services: services.length,
-        logs: 0,
-        healthyServices: health.filter((h) => h.status === 'UP').length,
-        totalServices: health.length,
+        projects: (projects || []).length,
+        services: (services || []).length,
+        logs: logsResponse.totalHits || 0,
+        healthyServices: (health || []).filter((h) => h.status === 'UP').length,
+        totalServices: (health || []).length,
       });
-      setHealthStatus(health.slice(0, 5));
+      setHealthStatus((health || []).slice(0, 5));
+      setRecentLogs(logsResponse.logs || []);
     } catch (err) {
+      console.error('Error loading dashboard:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -178,6 +185,56 @@ function Dashboard() {
           </div>
         </section>
       </div>
+
+      <section className="card">
+        <div className="card-header">
+          <h2>Recent Logs</h2>
+          <Link to="/logs" className="card-link">View all</Link>
+        </div>
+        <div className="card-body">
+          {recentLogs.length === 0 ? (
+            <div className="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+              </svg>
+              <p>No logs ingested yet</p>
+              <Link to="/logs" className="btn btn-primary btn-sm">
+                View Logs
+              </Link>
+            </div>
+          ) : (
+            <div className="logs-table-container">
+              <table className="logs-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '150px' }}>Timestamp</th>
+                    <th style={{ width: '70px' }}>Level</th>
+                    <th style={{ width: '120px' }}>Service</th>
+                    <th style={{ width: '150px' }}>Logger</th>
+                    <th>Message</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentLogs.map((log) => (
+                    <tr key={log.id}>
+                      <td className="log-timestamp">{formatTimestamp(log.timestamp)}</td>
+                      <td>
+                        <span className={`level-badge ${log.level.toLowerCase()}`}>{log.level}</span>
+                      </td>
+                      <td className="log-service">{log.serviceId?.slice(0, 8)}...</td>
+                      <td className="log-logger">{log.logger || '—'}</td>
+                      <td className="log-message">{log.message}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
@@ -257,6 +314,19 @@ function formatRelativeTime(dateString) {
   if (diffMin < 60) return `${diffMin}m ago`;
   if (diffHour < 24) return `${diffHour}h ago`;
   return `${diffDay}d ago`;
+}
+
+function formatTimestamp(isoString) {
+  const date = new Date(isoString);
+  return date.toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).replace(',', '');
 }
 
 export default Dashboard;

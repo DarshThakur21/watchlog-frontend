@@ -257,6 +257,23 @@
   margin-top: var(--space-2);
 }
 
+.action-buttons {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.btn-danger {
+  color: var(--color-error);
+  border-color: var(--color-error-border);
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: var(--color-error);
+  border-color: var(--color-error);
+  color: white;
+}
+
 .skeleton-list {
   display: flex;
   flex-direction: column;
