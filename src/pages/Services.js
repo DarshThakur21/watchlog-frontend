@@ -21,6 +21,15 @@ function Services() {
   const [formError, setFormError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [editingService, setEditingService] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    serviceName: '',
+    baseUrl: '',
+    healthCheckEndpoint: '/actuator/health',
+    apiKey: '',
+  });
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editFormError, setEditFormError] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -100,6 +109,51 @@ function Services() {
   function handleDeleteCancel() {
     setDeletingId(null);
     setDeleteConfirm(false);
+  }
+
+  function handleEditClick(service) {
+    setEditingService(service);
+    setEditFormData({
+      serviceName: service.serviceName,
+      baseUrl: service.baseUrl,
+      healthCheckEndpoint: service.healthCheckEndpoint || '/actuator/health',
+      apiKey: '',
+    });
+    setEditFormError(null);
+  }
+
+  async function handleEditSubmit(e) {
+    e.preventDefault();
+    if (!editingService) return;
+    if (!editFormData.serviceName.trim() || !editFormData.baseUrl.trim()) {
+      setEditFormError('Service name and base URL are required');
+      return;
+    }
+
+    try {
+      setEditSubmitting(true);
+      await api.services.create({
+        serviceId: editingService.id,
+        projectId: editingService.projectId,
+        serviceName: editFormData.serviceName.trim(),
+        baseUrl: editFormData.baseUrl.trim(),
+        healthCheckEndpoint: editFormData.healthCheckEndpoint.trim() || '/actuator/health',
+        apiKey: editFormData.apiKey.trim() || undefined,
+      });
+      setEditingService(null);
+      setEditFormData({ serviceName: '', baseUrl: '', healthCheckEndpoint: '/actuator/health', apiKey: '' });
+      loadData();
+    } catch (err) {
+      setEditFormError(err.message);
+    } finally {
+      setEditSubmitting(false);
+    }
+  }
+
+  function handleEditCancel() {
+    setEditingService(null);
+    setEditFormData({ serviceName: '', baseUrl: '', healthCheckEndpoint: '/actuator/health', apiKey: '' });
+    setEditFormError(null);
   }
 
   function handleProjectFilter(projectId) {
@@ -217,6 +271,17 @@ function Services() {
                       <Link to={`/services/${service.id}`} className="btn btn-sm btn-outline">
                         View
                       </Link>
+                      <button
+                        className="btn btn-sm btn-outline"
+                        onClick={() => handleEditClick(service)}
+                        disabled={editingService?.id === service.id}
+                        title="Edit service"
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                        </svg>
+                      </button>
                       <button
                         className="btn btn-sm btn-outline btn-danger"
                         onClick={() => handleDeleteClick(service.id)}
@@ -364,6 +429,73 @@ function Services() {
             </div>
           </div>
         </div>
+      )}
+
+      {editingService && (
+        <Modal onClose={handleEditCancel} title="Edit Service">
+          <form onSubmit={handleEditSubmit} className="modal-form">
+            <div className="form-group">
+              <label htmlFor="editServiceName">Service Name *</label>
+              <input
+                type="text"
+                id="editServiceName"
+                name="serviceName"
+                value={editFormData.serviceName}
+                onChange={(e) => setEditFormData({ ...editFormData, [e.target.name]: e.target.value })}
+                placeholder="Enter service name"
+                required
+                disabled={editSubmitting}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="editBaseUrl">Base URL *</label>
+              <input
+                type="url"
+                id="editBaseUrl"
+                name="baseUrl"
+                value={editFormData.baseUrl}
+                onChange={(e) => setEditFormData({ ...editFormData, [e.target.name]: e.target.value })}
+                placeholder="https://api.example.com"
+                required
+                disabled={editSubmitting}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="editHealthCheckEndpoint">Health Check Endpoint</label>
+              <input
+                type="text"
+                id="editHealthCheckEndpoint"
+                name="healthCheckEndpoint"
+                value={editFormData.healthCheckEndpoint}
+                onChange={(e) => setEditFormData({ ...editFormData, [e.target.name]: e.target.value })}
+                placeholder="/actuator/health"
+                disabled={editSubmitting}
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="editApiKey">API Key (Optional)</label>
+              <input
+                type="text"
+                id="editApiKey"
+                name="apiKey"
+                value={editFormData.apiKey}
+                onChange={(e) => setEditFormData({ ...editFormData, [e.target.name]: e.target.value })}
+                placeholder="Leave empty to keep current"
+                disabled={editSubmitting}
+              />
+              <p className="form-hint">Leave empty to keep current API key</p>
+            </div>
+            {editFormError && <div className="form-error">{editFormError}</div>}
+            <div className="form-actions">
+              <button type="button" className="btn btn-secondary" onClick={handleEditCancel} disabled={editSubmitting}>
+                Cancel
+              </button>
+              <button type="submit" className="btn btn-primary" disabled={editSubmitting}>
+                {editSubmitting ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        </Modal>
       )}
     </div>
   );

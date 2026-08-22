@@ -71,6 +71,7 @@ export const servicesApi = {
   create: (data) => requestWithTypes('/services', {
     method: 'POST',
     body: JSON.stringify({
+      serviceId: data.serviceId, // Include ID for updates
       projectId: data.projectId,
       serviceName: data.serviceName,
       baseUrl: data.baseUrl,
