@@ -1,3 +1,4 @@
+import TelemetryPanel from './TelemetryPanel';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
@@ -29,7 +30,7 @@ function Dashboard() {
         api.projects.list(),
         api.services.list(),
         api.health.status(),
-        api.logs.query({ size: 5 }).catch(() => ({ logs: [], totalHits: 0 })),
+        api.logs.query({ size: 5 }),
       ]);
       console.log('Dashboard data received:', { projects, services, health, logsResponse });
 
@@ -116,6 +117,7 @@ function Dashboard() {
         />
       </div>
 
+      <TelemetryPanel />
       <div className="dashboard-grid">
         <section className="card">
           <div className="card-header">

@@ -1,9 +1,10 @@
+import TelemetryPanel from './TelemetryPanel';
 import React, { useEffect, useState } from 'react';
 import api from '../api/client';
 import './Metrics.css';
 
 const BUCKET_OPTIONS = ['1 minute', '5 minutes', '15 minutes', '1 hour', '1 day'];
-const COMMON_METRICS = ['cpu_usage', 'memory_usage', 'request_count', 'error_rate', 'response_time'];
+const COMMON_METRICS = ['cpu_usage', 'memory_usage_mb'];
 
 function Metrics() {
   const [services, setServices] = useState([]);
@@ -36,7 +37,8 @@ function Metrics() {
       console.log('Services data received:', data);
       setServices(data || []);
       if (data && data.length > 0) {
-        setSelectedService(data[0].id);
+        const requested = new URLSearchParams(window.location.search).get('serviceId');
+        setSelectedService(data.find(s => s.id === requested)?.id || data[0].id);
       }
     } catch (err) {
       console.error('Failed to load services:', err);
@@ -94,9 +96,10 @@ function Metrics() {
         </div>
       </div>
 
+      <TelemetryPanel serviceId={selectedService} />
       <section className="filters-card card">
         <div className="card-header">
-          <h2>Query Parameters</h2>
+          <h2>Demo and historical metrics</h2>
           <button className="btn btn-sm btn-primary" onClick={handleQuery}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
               <circle cx="11" cy="11" r="8" />
@@ -204,9 +207,9 @@ function Metrics() {
           <h2>{metricName || customMetric || 'Metric'} — Time Series</h2>
           {hasData && (
             <div className="metric-stats">
-              <span className="stat-item">Min: {formatNumber(getMin(data))}</span>
-              <span className="stat-item">Avg: {formatNumber(getAvg(data))}</span>
-              <span className="stat-item">Max: {formatNumber(getMax(data))}</span>
+              <span className="stat-item">Bucket min: {formatNumber(getMin(data))}</span>
+              <span className="stat-item">Bucket mean: {formatNumber(getAvg(data))}</span>
+              <span className="stat-item">Bucket max: {formatNumber(getMax(data))}</span>
             </div>
           )}
         </div>

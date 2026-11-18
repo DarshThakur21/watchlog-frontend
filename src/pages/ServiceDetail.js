@@ -1,3 +1,4 @@
+import TelemetryPanel from './TelemetryPanel';
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api/client';
@@ -82,6 +83,7 @@ function ServiceDetail() {
         </div>
       </div>
 
+      <TelemetryPanel serviceId={serviceId} />
       <div className="detail-grid">
         <section className="detail-card">
           <div className="card-header">

@@ -1,3 +1,4 @@
+import TelemetryPanel from './TelemetryPanel';
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../api/client';
@@ -172,6 +173,7 @@ function ProjectDetail() {
         </div>
       )}
 
+      <TelemetryPanel projectId={projectId} />
       <div className="services-table-container">
         {services.length === 0 ? (
           <div className="empty-state">

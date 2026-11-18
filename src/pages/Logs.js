@@ -1,9 +1,16 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '../api/client';
 import './Logs.css';
 
 const LOG_LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR'];
 const PAGE_SIZES = [10, 20, 50, 100];
+
+function localInput(iso) {
+  if (!iso) return '';
+  const date = new Date(iso);
+  if (!Number.isFinite(date.getTime())) return '';
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0,23);
+}
 
 function Logs() {
   const [logs, setLogs] = useState([]);
@@ -14,10 +21,10 @@ function Logs() {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(20);
   const [filters, setFilters] = useState({
-    serviceId: '',
+    serviceId: new URLSearchParams(window.location.search).get('serviceId') || '',
     level: '',
-    from: '',
-    to: '',
+    from: new URLSearchParams(window.location.search).get('from') || '',
+    to: new URLSearchParams(window.location.search).get('to') || '',
     keyword: '',
   });
 
@@ -45,6 +52,7 @@ function Logs() {
     setError(null);
     try {
       const params = {
+        projectId: new URLSearchParams(window.location.search).get("projectId") || undefined,
         page,
         size,
         ...(filters.serviceId && { serviceId: filters.serviceId }),
@@ -174,8 +182,8 @@ function Logs() {
               <input
                 type="datetime-local"
                 id="from"
-                value={filters.from}
-                onChange={(e) => handleFilterChange('from', e.target.value)}
+                value={localInput(filters.from)}
+                onChange={(e) => handleFilterChange('from', e.target.value ? new Date(e.target.value).toISOString() : '')}
                 className="filter-input"
               />
             </div>
@@ -184,8 +192,8 @@ function Logs() {
               <input
                 type="datetime-local"
                 id="to"
-                value={filters.to}
-                onChange={(e) => handleFilterChange('to', e.target.value)}
+                value={localInput(filters.to)}
+                onChange={(e) => handleFilterChange('to', e.target.value ? new Date(e.target.value).toISOString() : '')}
                 className="filter-input"
               />
             </div>

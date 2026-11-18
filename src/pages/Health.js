@@ -1,3 +1,4 @@
+import TelemetryPanel from './TelemetryPanel';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../api/client';
@@ -129,6 +130,7 @@ function Health() {
         </div>
       </section>
 
+      <TelemetryPanel />
       <section className="health-card card">
         <div className="card-header">
           <h2>Service Status</h2>

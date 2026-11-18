@@ -1,0 +1,12 @@
+.telemetry-panel { margin-block: 1rem; }
+.telemetry-panel .card-header { display:flex; flex-wrap:wrap; gap:1rem; align-items:center; }
+.telemetry-panel .card-body { display:grid; gap:.7rem; }
+.telemetry-panel select { max-width:100%; }
+.wl-bars { display:flex; height:6rem; align-items:stretch; border-bottom:1px solid currentColor; }
+.wl-bars a { flex:1; display:flex; flex-direction:column-reverse; min-width:0; }
+.wl-bars a:hover { outline:1px solid currentColor; }
+.wl-TRACE { background:#888; } .wl-DEBUG { background:#8089b3; } .wl-INFO { background:#4c92c3; } .wl-WARN { background:#eba747; } .wl-ERROR { background:#df6872; }
+.wl-key { color:#111; padding:2px 5px; margin-right:3px; }
+.wl-gauge { width:100%; height:7rem; border-bottom:1px solid currentColor; }
+.wl-gauge line { stroke:#4c92c3; stroke-width:.35; }
+.wl-gauge circle { fill:#4c92c3; }
